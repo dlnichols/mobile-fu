@@ -2,8 +2,6 @@ require 'rails'
 require 'rack/mobile-detect'
 
 module MobileFu
-  autoload :Helper, 'mobile-fu/helper'
-
   class Railtie < Rails::Railtie
     initializer "mobile-fu.configure" do |app|
       app.config.middleware.use Rack::MobileDetect
@@ -15,17 +13,31 @@ module MobileFu
           include ActionController::MobileFu
         end
       end
-
-      initializer "mobile-fu.action_view" do |app|
-        ActiveSupport.on_load :action_view do
-          include MobileFu::Helper
-          alias_method_chain :stylesheet_link_tag, :mobilization
-        end
-      end
     end
 
     Mime::Type.register_alias "text/html", :mobile
     Mime::Type.register_alias "text/html", :tablet
+  end
+end
+
+module ActionDispatch
+  module Http
+    module MimeNegotiation
+      extend ActiveSupport::Concern
+
+      def formats
+        @env["action_dispatch.request.formats"] ||=
+          if parameters[:format]
+            Array(Mime[parameters[:format]])
+          elsif use_accept_header && valid_accept_header
+            accepts
+          elsif xhr?
+            [ Mime::JS ]
+          else
+            env['X_MOBILE_DEVICE'] ? [ Mime::MOBILE ] : [ Mime::HTML ]
+          end
+      end
+    end
   end
 end
 
