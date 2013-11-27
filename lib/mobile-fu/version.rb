@@ -1,3 +1,3 @@
 module MobileFu
-  VERSION = "1.1.1.id2"
+  VERSION = "1.1.1.id3"
 end
