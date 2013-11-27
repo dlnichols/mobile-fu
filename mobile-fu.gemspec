@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
   s.rubyforge_project = "mobile-fu"
 
   s.files         = ["CHANGELOG", "MIT-LICENSE", "README.md", "lib/mobile-fu.rb", "lib/mobile-fu/helper.rb", "lib/mobile-fu/version.rb" ]
-  s.test_files    = [ 'spec/mobilized_styles_spec.rb', 'spec/spec_helper.rb' ] 
+  s.test_files    = [ 'spec/spec_helper.rb' ] 
   s.executables   = [ ]
   s.require_path  = 'lib'
 
