@@ -45,7 +45,7 @@ module ActionController
   module MobileFu
     # These are various strings that can be found in tablet devices.  Please feel free
     # to add on to this list.
-    TABLET_USER_AGENTS =  /ipad|android 3.0|xoom|sch-i800|playbook|tablet|kindle|honeycomb|Nexus 7/.freeze
+    TABLET_USER_AGENTS =  /ipad|android 3.0|xoom|sch-i800|gt-p1000|playbook|tablet|kindle|honeycomb|nexus 7|windows nt [0-9.]+; arm/.freeze
 
     def self.included(base)
       base.extend ClassMethods
@@ -93,6 +93,23 @@ module ActionController
       #   end
       def has_no_mobile_fu_for(*actions)
         @mobile_exempt_actions = actions
+      end
+
+      # Add this to your controllers to only let those actions use the mobile format
+      # this method has priority over the #has_no_mobile_fu_for
+      #   class AwesomeController < ApplicationController
+      #     has_mobile_fu_for :index
+      #
+      #     def index
+      #       # Mobile format will be set as normal here if user is on a mobile device
+      #     end
+      #
+      #     def show
+      #       # Mobile format will not be set, even if user is on a mobile device
+      #     end
+      #   end
+      def has_mobile_fu_for(*actions)
+        @mobile_include_actions = actions
       end
     end
 
@@ -171,12 +188,21 @@ module ActionController
         request.user_agent.to_s.downcase.include? type.to_s.downcase
       end
 
+      # Returns true if current action is supposed to use mobile format
+      # See #has_mobile_fu_for
+      def mobile_action?
+        if self.class.instance_variable_get("@mobile_include_actions").nil? #Now we know we dont have any includes, maybe excludes?
+          return !mobile_exempt?
+        else
+          self.class.instance_variable_get("@mobile_include_actions").try(:include?, params[:action].try(:to_sym))
+        end
+      end
+
       # Returns true if current action isn't supposed to use mobile format
       # See #has_no_mobile_fu_for
 
       def mobile_exempt?
-        return true if params[:action].nil?
-        self.class.instance_variable_get("@mobile_exempt_actions").try(:include?, params[:action].to_sym)
+        self.class.instance_variable_get("@mobile_exempt_actions").try(:include?, params[:action].try(:to_sym))
       end
     end
   end

@@ -22,7 +22,7 @@ class ApplicationController < ActionController::Base
 end
 ```
 
-Once this is in place, any request that comes from a mobile device will be be
+Once this is in place, any request that comes from a mobile device will be
 set as :mobile format.  It is up to you to determine how you want to handle
 these requests.  It is also up to you to create the .mobile.erb versions of
 your views that are to be requested.
@@ -34,6 +34,24 @@ helper functions, pass false as an argument.
 class ApplicationController < ActionController::Base
   has_mobile_fu false
 end
+```
+
+If you dont want to have all the methods respond to :mobile and :tablet, you can opt-in this actions
+using the following class method: `has_mobile_fu_for :action`
+Example:
+
+```ruby
+class YourAwesomeClass < ActionController::Base
+  has_mobile_fu
+  has_mobile_fu_for :index
+
+  def index
+    # Mobile format will be set as normal here if user is on a mobile device
+  end
+
+  def another_method
+    # Mobile format will not be set, even if user is on a mobile device
+  end
 ```
 
 Mobile Fu automatically adds a new `:mobile` and `:tablet` to `text/html` mime type
@@ -68,6 +86,21 @@ session[:mobile_view] # => Set to true if request format is :mobile and false
 session[:tablet_view] # => Set to true if request format is :tablet and false
                            if set to :html
 ```
+
+If you want to use the default response templates, like index.html.erb, instead of the index.tablet.erb you can
+exclude the tablet rendering from beeing used:
+you can create a `before_filter` and put it before the has_mobile_fu call
+
+```ruby
+before_filter :force_tablet_html
+has_mobile_fu
+
+def force_tablet_html
+	session[:tablet_view] = false
+end
+```
+
+Same will work for mobile, just change the `tablet` values to `mobile`
 
 So, different devices need different styling.  Don't worry, we've got this
 baked in to Mobile Fu.
